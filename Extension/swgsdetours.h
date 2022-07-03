@@ -16,7 +16,13 @@
 	Author: Kyle Sanderson (KyleS).
 */
 
-#pragma once
+#ifndef _INCLUDE_SOURCEMOD_EXTENSION_SWGSDETOURS_H_
+#define _INCLUDE_SOURCEMOD_EXTENSION_SWGSDETOURS_H_
+
+#if defined _INCLUDE_SOURCEMOD_DETOURS_H_
+class CDetour;
+#endif
+
 #include "smsdk_ext.h"
 #include "steam_gameserver.h"
 #include "CDetour/detours.h"
@@ -33,3 +39,5 @@ class SteamWorksGSDetours
 };
 
 #include "extension.h"
+
+#endif // _INCLUDE_SOURCEMOD_EXTENSION_SWGSDETOURS_H_

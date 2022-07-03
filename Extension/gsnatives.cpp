@@ -58,14 +58,8 @@ static cell_t sm_GetPublicIP(IPluginContext *pContext, const cell_t *params)
 	{
 		return 0;
 	}
-
-	SteamIPAddress_t sAddr = pServer->GetPublicIP();
-	if (!sAddr.IsSet())
-	{
-		return 0;
-	}
-
-	uint32_t ipaddr = sAddr.m_unIPv4;
+	
+	uint32_t ipaddr = pServer->GetPublicIP();
 	
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[1], &addr);
@@ -86,13 +80,7 @@ static cell_t sm_GetPublicIPCell(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	SteamIPAddress_t sAddr = pServer->GetPublicIP();
-	if (!sAddr.IsSet())
-	{
-		return 0;
-	}
-
-	return sAddr.m_unIPv4;
+	return pServer->GetPublicIP();
 }
 
 static cell_t sm_IsLoaded(IPluginContext *pContext, const cell_t *params)

@@ -152,7 +152,7 @@ EGCResults SteamWorksGCHooks::RetrieveMessage(uint32 *punMsgType, void *pubDest,
 		RETURN_META_VALUE(MRES_SUPERCEDE, static_cast<EGCResults>(Result));
 	}
 
-	RETURN_META_VALUE(MRES_SUPERCEDE, res);
+	RETURN_META_VALUE(MRES_IGNORED, k_EGCResultOK);
 }
 
 void SteamWorksGCHooks::AddHooks(ISteamGameCoordinator *pGC)
