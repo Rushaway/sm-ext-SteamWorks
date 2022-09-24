@@ -1,53 +1,67 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-if not "SM" in globals():
-	SM = Extension
-
 projectName = 'SteamWorks'
 
-project = SM.HL2Project(builder, projectName + '.ext')
-project.sources += [
-  'extension.cpp',
-  'swgameserver.cpp',
-  'swgamedata.cpp',
-  'swforwards.cpp',
-  'gsnatives.cpp',
-  'swgshooks.cpp',
-  'swgsdetours.cpp',
-  'ssnatives.cpp',
-  'gcnatives.cpp',
-  'swhttp.cpp',
-  'swhttprequest.cpp',
-  'swgchooks.cpp',
-  os.path.join(Extension.sm_root, 'extensions', 'sm-ext-common', 'mathstubs.c'),
-  os.path.join(Extension.sm_root, 'public', 'smsdk_ext.cpp'),
-  os.path.join(Extension.sm_root, 'public', 'CDetour', 'detours.cpp'),
-  os.path.join(Extension.sm_root, 'public', 'asm', 'asm.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'decode.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'itab.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'syn-att.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'syn-intel.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'syn.c'),
-  os.path.join(Extension.sm_root, 'public', 'libudis86', 'udis86.c'),
-]
-project.compiler.defines += ['HAVE_STRING_H'];
+for cxx in builder.targets:
+  for sdk_name in SM.sdks:
+    sdk = SM.sdks[sdk_name]
 
-for sdk_name in SM.sdks:
-  sdk = SM.sdks[sdk_name]
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+      continue
 
-  binary = SM.HL2Config(project, projectName + '.ext', sdk)
-  
-  binary.compiler.defines += ['SOURCEMOD_BUILD', 'VERSION_SAFE_STEAM_API_INTERFACES']
-  binary.compiler.cxxincludes += [os.path.join(SM.steamworks_root, 'public', 'steam'), os.path.join(sdk.path, 'public', 'steam')];
-  
-  if builder.target_platform == 'linux':
-    binary.compiler.postlink += os.path.join(SM.steamworks_root, 'redistributable_bin', 'linux32', 'libsteam_api.so'),;
-	
-  if builder.target_platform == 'windows':
-    binary.compiler.postlink += os.path.join(SM.steamworks_root, 'redistributable_bin', 'steam_api.lib'),;
-	
-  if builder.target_platform == 'mac':
-    binary.compiler.postlink += os.path.join(SM.steamworks_root, 'redistributable_bin', 'osx32', 'libsteam_api.dylib'),;
+    sdk.ext = "." + sdk.ext
+    if "sdk2013" in sdk.ext:
+      sdk.ext = ""
 
-SM.extensions += builder.Add(project)
+    binary = SM.HL2Library(builder, cxx, projectName + ".ext" + sdk.ext, sdk)
+
+    binary.compiler.defines += [
+      'HAVE_STRING_H',
+      'SOURCEMOD_BUILD',
+      'VERSION_SAFE_STEAM_API_INTERFACES'
+    ]
+
+    if cxx.target.platform == 'linux':
+      binary.compiler.postlink += [
+        os.path.join(SM.steamworks_root, 'redistributable_bin', 'linux32', 'libsteam_api.so')
+      ]
+    elif cxx.target.platform == 'mac':
+      binary.compiler.postlink += [
+        os.path.join(SM.steamworks_root, 'redistributable_bin', 'osx32', 'libsteam_api.dylib'),
+      ]
+    elif cxx.target.platform == "windows":
+      binary.compiler.postlink += [
+        os.path.join(SM.steamworks_root, 'redistributable_bin', 'steam_api.lib'),
+      ]
+
+    if cxx.family == 'gcc' or cxx.family == 'clang':
+      cxx.cxxflags += ['-fno-rtti']
+    elif cxx.family == 'msvc':
+      cxx.cxxflags += ['/GR-']
+
+    binary.sources += [
+      'extension.cpp',
+      'swgameserver.cpp',
+      'swgamedata.cpp',
+      'swforwards.cpp',
+      'gsnatives.cpp',
+      'swgshooks.cpp',
+      'swgsdetours.cpp',
+      'ssnatives.cpp',
+      'gcnatives.cpp',
+      'swhttp.cpp',
+      'swhttprequest.cpp',
+      'swgchooks.cpp',
+      os.path.join(SM.sm_root, 'public', 'smsdk_ext.cpp'),
+      os.path.join(SM.sm_root, 'public', 'CDetour', 'detours.cpp'),
+      os.path.join(SM.sm_root, 'public', 'asm', 'asm.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'decode.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'itab.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'syn-att.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'syn-intel.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'syn.c'),
+      os.path.join(SM.sm_root, 'public', 'libudis86', 'udis86.c'),
+    ]
+
+    SM.extensions += [builder.Add(binary)]
